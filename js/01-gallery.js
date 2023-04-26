@@ -1,50 +1,54 @@
 import { galleryItems } from "./gallery-items.js";
-// Change code below this line
-const galleryContainer = document.querySelector(".gallery");
-const itemsMarkup = createGalleryItemsMarkup(galleryItems);
-galleryContainer.insertAdjacentHTML("beforeend", itemsMarkup);
-galleryContainer.addEventListener("click", onImgClick);
 
-function createGalleryItemsMarkup(items) {
-  return items
-    .map(({ preview, original, description }) => {
-      return `<div class="gallery__item">
-  <a class="gallery__link" href="${original}">
-    <img
-      class="gallery__image"
-      src="${preview}"
-      data-source="${original}"
-      alt="${description}"
-    />
-  </a>
-</div>`;
-    })
-    .join("");
-}
-
-const instance = basicLightbox.create(
-  `<img width="1280" height="auto" src="">`,
-  {
-    onShow: (instance) => {
-      window.addEventListener("keydown", onEscKeyPress);
-    },
-    onClose: (instance) => {
-      window.removeEventListener("keydown", onEscKeyPress);
-    },
-  }
+const galleryItemElement = document.querySelector(".gallery");
+let instance;
+galleryItemElement.insertAdjacentHTML(
+  "beforeend",
+  createGalleryItem(galleryItems)
 );
+
+galleryItemElement.addEventListener("click", onImgClick);
+
+function createGalleryItem(galleryItems) {
+  return galleryItems
+    .map(({ preview, original, description }) => {
+      return `
+  <li class='gallery__item'>
+		<a class='gallery__link' href='${original}'>
+	<img 
+      class='gallery__image' 
+      src='${preview}' 
+      data-source='${original}' 
+      alt='${description}' />
+		</a>
+	</li>`;
+    })
+    .join(" ");
+}
 
 function onImgClick(e) {
   e.preventDefault();
-  const datasetSource = e.target.dataset.source;
-  if (!datasetSource) return;
-  instance.element().querySelector("img").src = datasetSource;
+
+  if (e.target.nodeName !== "IMG") {
+    return;
+  }
+
+  const imgSource = e.target.dataset.source;
+
+  instance = basicLightbox.create(`
+    <div class="modal">
+    <img src="${imgSource}"/>
+    </div>
+`);
+
   instance.show();
+  document.addEventListener("keydown", closeImgCard);
 }
 
-function onEscKeyPress(e) {
+function closeImgCard(e) {
   if (e.code !== "Escape") return;
-  instance.close();
-}
 
+  instance.close();
+  document.removeEventListener("keydown", closeImgCard);
+}
 console.log(galleryItems);
